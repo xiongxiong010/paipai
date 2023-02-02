@@ -15,6 +15,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
@@ -48,6 +50,8 @@ public class SetmealController {
      * @return
      */
     @PostMapping
+    //设置allEntries为true，清空缓存名称为setmealCache的所有缓存
+    @CacheEvict(value = "setmealCache", allEntries = true)
     public R<String> save(@RequestBody SetmealDto setmealDto){
         log.info("套餐信息：{}",setmealDto);
 
@@ -107,6 +111,8 @@ public class SetmealController {
      * @return
      */
     @DeleteMapping
+    //设置allEntries为true，清空缓存名称为setmealCache的所有缓存
+    @CacheEvict(value = "setmealCache", allEntries = true)
     public R<String> delete(@RequestParam List<Long> ids){
         log.info("ids:{}",ids);
 
@@ -114,7 +120,14 @@ public class SetmealController {
 
         return R.success("套餐数据删除成功");
     }
+
+    /**
+     * 根据条件查询套餐数据
+     * @param setmeal
+     * @return
+     */
     @GetMapping("/list")
+    @Cacheable(value = "setmealCache", key = "#setmeal.categoryId + '_' + #setmeal.status")
     public R<List<Setmeal>> list(Setmeal setmeal) {
         log.info("setmeal:{}", setmeal);
         //条件构造器
@@ -202,8 +215,15 @@ public class SetmealController {
         return R.success(setmealDto);
     }
 
+    /**
+     * 更新套餐数据
+     * @param setmealDto
+     * @return
+     */
     @PutMapping
-    public R<String> openStatus(@RequestBody SetmealDto setmealDto) {
+    //设置allEntries为true，清空缓存名称为setmealCache的所有缓存
+    @CacheEvict(value = "setmealCache", allEntries = true)
+    public R<String> updata(@RequestBody SetmealDto setmealDto) {
 
         setmealService.updata(setmealDto);
 
